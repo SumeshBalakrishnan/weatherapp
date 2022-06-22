@@ -6,38 +6,35 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
-import android.location.Location
-import android.location.LocationListener
 import android.location.LocationManager
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.Settings
+import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.*
 import com.test.gad.adapter.UsersListAdapter
-import com.test.gad.utils.NetworkResult
 import com.test.gad.databinding.ActivityMainBinding
+import com.test.gad.extenision.isGpsEnable
+import com.test.gad.extenision.showToast
+import com.test.gad.utils.NetworkResult
 import com.test.gad.utils.Utils
 import com.test.gad.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import android.provider.Settings
-import android.util.Log
-import androidx.activity.result.IntentSenderRequest
-import androidx.activity.result.contract.ActivityResultContracts
-import com.google.android.gms.common.api.GoogleApiClient
-import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.*
-import com.test.gad.extenision.isGpsEnable
-import com.test.gad.extenision.showToast
-import kotlin.math.ln
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -51,7 +48,8 @@ class MainActivity : AppCompatActivity() {
     private val permissionCode = 123
     private val permission = listOf<String>(
         Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_COARSE_LOCATION)
+        Manifest.permission.ACCESS_COARSE_LOCATION
+    )
 
     private var lat: String? = null
     private var lng: String? = null
@@ -59,7 +57,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var locationRequest = LocationRequest.create()
     private var callback: LocationCallback? = null
-
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,28 +74,31 @@ class MainActivity : AppCompatActivity() {
         checkPermissions()
     }
 
-    override fun onStart() {
-        super.onStart()
-    }
-
-    private fun checkPermissions(){
+    private fun checkPermissions() {
         val requestPermission = ArrayList<String>()
-        for (perm in permission){
-            if(ContextCompat.checkSelfPermission(this, perm)!= PermissionChecker.PERMISSION_GRANTED){
+        for (perm in permission) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    perm
+                ) != PermissionChecker.PERMISSION_GRANTED
+            ) {
                 requestPermission.add(perm)
             }
         }
-        if(requestPermission.isEmpty()){
+        if (requestPermission.isEmpty()) {
             //launchLogin()
             if (!isGpsEnable()) {
                 displayLocationSettingsRequest(this, true)
                 showToast("Gps is Offs")
-            }else{
+                binding.pbDog.visibility = View.GONE
+                getVisibility(false)
+            } else {
                 getLastKnownLocation()
                 displayLocationSettingsRequest(this, false)
             }
-        }else{
+        } else {
             ActivityCompat.requestPermissions(this, permission.toTypedArray(), permissionCode)
+            binding.pbDog.visibility = View.GONE
         }
     }
 
@@ -118,16 +118,16 @@ class MainActivity : AppCompatActivity() {
         }
 
         val task = LocationServices.getSettingsClient(this)
-                .checkLocationSettings(builder.build())
+            .checkLocationSettings(builder.build())
 
 
-        task?.addOnCompleteListener { response ->
+        task.addOnCompleteListener { response ->
             if (response.isComplete) {
                 //Do something
                 startLocationUpdate()
             }
         }
-        task?.addOnFailureListener { e ->
+        task.addOnFailureListener { e ->
             if (e is ResolvableApiException) {
                 try {
                     // Handle result in onActivityResult()
@@ -149,10 +149,11 @@ class MainActivity : AppCompatActivity() {
             val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager?
 
             if (locationManager?.isProviderEnabled(LocationManager.GPS_PROVIDER) == true) {
-                 displayLocationSettingsRequest(this, false)
+                displayLocationSettingsRequest(this, false)
             }
         }
     }
+
     private fun startLocationUpdate() {
         locationCallback()
         if (::fusedLocationClient.isInitialized) {
@@ -183,7 +184,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun getLastKnownLocation() {
+    private fun getLastKnownLocation() {
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -195,9 +196,9 @@ class MainActivity : AppCompatActivity() {
             return
         }
         fusedLocationClient.lastLocation
-            .addOnSuccessListener { location->
+            .addOnSuccessListener { location ->
                 if (location != null) {
-                   lat = location.latitude.toString()
+                    lat = location.latitude.toString()
                     lng = location.longitude.toString()
                     triggerAPI(lat, lng)
                 }
@@ -205,22 +206,39 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun triggerAPI(lat: String?, lng: String?) {
-        if(Utils.hasInternetConnection(this)){
+        if (Utils.hasInternetConnection(this)) {
+            getVisibility(true)
             viewModel.fetchWeatherResponse(lat, lng)
-        }else{
+        } else {
             Toast.makeText(
-                this,resources.getString(R.string.no_internet),
+                this, resources.getString(R.string.no_internet),
                 Toast.LENGTH_SHORT
             ).show()
         }
     }
 
+    fun getVisibility(visible: Boolean) {
+        if (visible) {
+            binding.pbDog.visibility = View.VISIBLE
+            binding.lytItemHead.visibility = View.VISIBLE
+            binding.tvCity.visibility = View.VISIBLE
+            binding.recyclerView.visibility = View.VISIBLE
+            binding.ivNoData.visibility = View.GONE
+        } else {
+            binding.pbDog.visibility = View.GONE
+            binding.lytItemHead.visibility = View.GONE
+            binding.tvCity.visibility = View.GONE
+            binding.recyclerView.visibility = View.GONE
+            binding.ivNoData.visibility = View.VISIBLE
+        }
+    }
+
     private fun setObserver() {
-        binding.pbDog.visibility = View.VISIBLE
+        //binding.pbDog.visibility = View.VISIBLE
         viewModel.response.observe(this) { response ->
             when (response) {
                 is NetworkResult.Success -> {
-                    val city = response.data?.city?.name +", "+ response.data?.city?.country
+                    val city = response.data?.city?.name + ", " + response.data?.city?.country
                     response.data?.let {
                         adapter.submitList(it.list)
                     }
@@ -230,7 +248,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 is NetworkResult.Error -> {
-                   // _binding.pbDog.visibility = View.GONE
+                    // _binding.pbDog.visibility = View.GONE
                     Toast.makeText(
                         this,
                         response.message,
@@ -239,6 +257,7 @@ class MainActivity : AppCompatActivity() {
 
                     println("==Error====${response.message}")
                     binding.pbDog.visibility = View.GONE
+                    getVisibility(false)
                 }
 
                 is NetworkResult.Loading -> {
@@ -249,12 +268,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initView() {
-        binding.recyclerView.addItemDecoration(DividerItemDecoration(this, LinearLayoutManager.VERTICAL))
+        binding.recyclerView.addItemDecoration(
+            DividerItemDecoration(
+                this,
+                LinearLayoutManager.VERTICAL
+            )
+        )
         binding.recyclerView.adapter = adapter
+
+        binding.swipe.setOnRefreshListener {
+            getFusedLocation()
+            binding.swipe.isRefreshing = false
+        }
     }
 
 
-    private fun showAlert(mesg:String) {
+    private fun showAlert(mesg: String) {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Need permission(s)")
         builder.setMessage(mesg)
@@ -270,8 +299,8 @@ class MainActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if(requestCode==permissionCode && grantResults.isNotEmpty()){
-            var deniedCount:Int = 0
+        if (requestCode == permissionCode && grantResults.isNotEmpty()) {
+            var deniedCount: Int = 0
             val permissionResult = HashMap<String, Int>()
 
             for (i in grantResults.indices) {
