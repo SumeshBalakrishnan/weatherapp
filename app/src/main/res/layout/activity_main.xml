@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+<!--
+        <variable
+            name="viewModel"
+            type="com.aregyan.github.views.userDetails.UserDetailsViewModel" />-->
+    </data>
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/lyt_item_head"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:background="@color/teal_200"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvDate"
+            app:layout_constraintWidth_percent=".25"
+            android:layout_width="0dp"
+            app:layout_constraintWidth_default="percent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:text="City"
+            android:gravity="center"
+            android:textSize="16sp"
+            android:padding="5dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+
+            />
+
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvUser"
+            app:layout_constraintWidth_percent=".25"
+            app:layout_constraintWidth_default="percent"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:padding="5dp"
+            android:textColor="@color/white"
+            android:text="Humidity"
+            app:layout_constraintRight_toLeftOf="@id/tvLabelCnt"
+            app:layout_constraintLeft_toRightOf="@id/tvDate"
+            app:layout_constraintTop_toTopOf="parent"
+            android:gravity="center"
+            />
+
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvLabelCnt"
+            android:textSize="16sp"
+            android:padding="5dp"
+            app:layout_constraintWidth_percent=".25"
+            app:layout_constraintWidth_default="percent"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Temp Max"
+            android:textColor="@color/white"
+            app:layout_constraintLeft_toRightOf="@id/tvUser"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvLabelCnt1"
+            android:textSize="16sp"
+            android:padding="5dp"
+            app:layout_constraintWidth_percent=".25"
+            app:layout_constraintWidth_default="percent"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Temp Min"
+            android:textColor="@color/white"
+            app:layout_constraintLeft_toRightOf="@id/tvLabelCnt"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/lyt_item_head"
+        tools:listitem="@layout/item_weather_list"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+
+    <ProgressBar
+        android:id="@+id/pbDog"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

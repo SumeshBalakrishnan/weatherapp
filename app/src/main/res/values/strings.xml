@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">WeatherApp</string>
+    <string name="no_internet">Please check your internet connectivity and try again.</string>
+</resources>

@@ -1,0 +1,307 @@
+package com.test.gad
+
+import android.Manifest
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.content.IntentSender
+import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
+import android.net.Uri
+import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.view.View
+import android.widget.Toast
+import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.PermissionChecker
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.test.gad.adapter.UsersListAdapter
+import com.test.gad.utils.NetworkResult
+import com.test.gad.databinding.ActivityMainBinding
+import com.test.gad.utils.Utils
+import com.test.gad.viewmodel.MainViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+import android.provider.Settings
+import android.util.Log
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.*
+import com.test.gad.extenision.isGpsEnable
+import com.test.gad.extenision.showToast
+import kotlin.math.ln
+
+@AndroidEntryPoint
+class MainActivity : AppCompatActivity(), LocationListener {
+
+    private val viewModel: MainViewModel by viewModels()
+    private lateinit var binding: ActivityMainBinding
+
+    @Inject
+    lateinit var adapter: UsersListAdapter
+
+    private val permissionCode = 123
+    private val permission = listOf<String>(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION)
+
+    private var lat: Double? = null
+    private var lng: Double? = null
+
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private var locationRequest = LocationRequest.create()
+    private var callback: LocationCallback? = null
+
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        getFusedLocation()
+        initView()
+        setObserver()
+    }
+
+    private fun getFusedLocation() {
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        Log.e("getFusedLocation====", "fusedLocationClient : $fusedLocationClient")
+        checkPermissions()
+    }
+
+    override fun onStart() {
+        super.onStart()
+    }
+
+    private fun checkPermissions(){
+        val requestPermission = ArrayList<String>()
+        for (perm in permission){
+            if(ContextCompat.checkSelfPermission(this, perm)!= PermissionChecker.PERMISSION_GRANTED){
+                requestPermission.add(perm)
+            }
+        }
+        if(requestPermission.isEmpty()){
+            //launchLogin()
+            if (!isGpsEnable()) {
+                displayLocationSettingsRequest(this, true)
+                showToast("Gps is Offs")
+            }else{
+                displayLocationSettingsRequest(this, false)
+            }
+        }else{
+            ActivityCompat.requestPermissions(this, permission.toTypedArray(), permissionCode)
+        }
+    }
+
+    private fun displayLocationSettingsRequest(context: Context, buildershow: Boolean) {
+        val googleApiClient = GoogleApiClient.Builder(context)
+            .addApi(LocationServices.API).build()
+        googleApiClient.connect()
+        locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        locationRequest.interval = 10000
+        locationRequest.fastestInterval = 10000 / 2.toLong()
+        val builder =
+            LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
+        if (buildershow) {
+            builder.setAlwaysShow(true)
+        } else {
+            builder.setAlwaysShow(false)
+        }
+
+        val task = LocationServices.getSettingsClient(this)
+                .checkLocationSettings(builder.build())
+
+
+        task?.addOnCompleteListener { response ->
+            if (response.isComplete) {
+                //Do something
+                startLocationUpdate()
+            }
+        }
+        task?.addOnFailureListener { e ->
+            if (e is ResolvableApiException) {
+                try {
+                    // Handle result in onActivityResult()
+                    val intentSenderRequest = IntentSenderRequest.Builder(
+                        e.resolution
+                    ).build()
+                    resolutionForResult.launch(intentSenderRequest)
+                } catch (sendEx: IntentSender.SendIntentException) {
+                }
+            }
+        }
+    }
+
+
+    private val resolutionForResult = registerForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()
+    ) { activityResult ->
+        if (activityResult.resultCode == Activity.RESULT_OK) {
+            val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager?
+
+            if (locationManager?.isProviderEnabled(LocationManager.GPS_PROVIDER) == true) {
+                 displayLocationSettingsRequest(this, false)
+            }
+        }
+    }
+    private fun startLocationUpdate() {
+        locationCallback()
+        if (::fusedLocationClient.isInitialized) {
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+
+                return
+            }
+            fusedLocationClient.requestLocationUpdates(locationRequest, callback, null)
+        }
+    }
+
+    private fun locationCallback() {
+        callback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                lat = locationResult.locations.get(0).latitude
+                lng = locationResult.locations.get(0).longitude
+                println("===latitude== : $lat")
+                println("===longitude== : $lng")
+                triggerAPI(lat, lng)
+            }
+        }
+    }
+
+    private fun triggerAPI(lat: Double?, lng: Double?) {
+        if(Utils.hasInternetConnection(this)){
+            binding.pbDog.visibility = View.VISIBLE
+            viewModel.fetchWeatherResponse()
+        }else{
+            Toast.makeText(
+                this,resources.getString(R.string.no_internet),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    private fun setObserver() {
+        viewModel.response.observe(this) { response ->
+            when (response) {
+                is NetworkResult.Success -> {
+                    response.data?.let {
+                        adapter.submitList(it.list)
+                    }
+                    println("==Success====")
+                    binding.pbDog.visibility = View.GONE
+                }
+
+                is NetworkResult.Error -> {
+                   // _binding.pbDog.visibility = View.GONE
+                    Toast.makeText(
+                        this,
+                        response.message,
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    println("==Error====${response.message}")
+                    binding.pbDog.visibility = View.GONE
+                }
+
+                is NetworkResult.Loading -> {
+                    binding.pbDog.visibility = View.VISIBLE
+                }
+            }
+        }
+    }
+
+    private fun initView() {
+        binding.recyclerView.addItemDecoration(DividerItemDecoration(this, LinearLayoutManager.VERTICAL))
+        binding.recyclerView.adapter = adapter
+    }
+
+    override fun onLocationChanged(location: Location) {
+        lng = location.longitude
+        lat = location.latitude
+        triggerAPI(lat, lng)
+
+        println("=Latitude ==: $lat")
+        println("=Longitude ==: $lng")
+    }
+
+
+    private fun showAlert(mesg:String) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Need permission(s)")
+        builder.setMessage(mesg)
+        builder.setPositiveButton("OK", { dialog, which -> checkPermissions() })
+        builder.setNeutralButton("Cancel", null)
+        val dialog = builder.create()
+        dialog.show()
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if(requestCode==permissionCode && grantResults.isNotEmpty()){
+            var deniedCount:Int = 0
+            val permissionResult = HashMap<String, Int>()
+
+            for (i in grantResults.indices) {
+                if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
+                    permissionResult[permissions[i]] = grantResults[i]
+                    deniedCount++
+                }
+            }
+            if (deniedCount == 0) {
+                triggerAPI(lat, lng)
+            } else {
+                for ((permName, permResult) in permissionResult) {
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(this, permName)) {
+                        showAlert("Some permissions are required to do the task.")
+                    } else {
+                        val builder = AlertDialog.Builder(this)
+                        //denied_imp_permission
+                        builder.setMessage("You have denied few important permission which are needed for the application. Please allow all permission at Settings -> Permissions")
+                        builder.setPositiveButton(
+                            "Go to Settings"
+                        ) { dialog, which ->
+                            dialog.dismiss()
+                            val intent = Intent(
+                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                Uri.fromParts("package", packageName, null)
+                            )
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            startActivity(intent)
+                            finish()
+                        }
+                        builder.setNegativeButton(
+                            "No"
+                        ) { dialog, which ->
+                            dialog.dismiss()
+                            finish()
+                        }
+                        builder.show()
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        binding.recyclerView.adapter = null
+    }
+}

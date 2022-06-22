@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="data"
+            type="com.test.gad.network.model.WeatherListItem" />
+
+        <variable
+            name="clickListener"
+            type="com.test.gad.adapter.ClickListener" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/purple_200"
+        android:onClick="@{() -> clickListener.onClick(data)}"
+        android:padding="10dp">
+
+<!--
+        <TextView
+            android:id="@+id/tvCity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:text="@{data.component1().component3().toString()}"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+
+            />
+
+        <TextView
+            android:id="@+id/tvhumidity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:text="@{data.component1().component2().toString()}"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvCity"
+
+            />
+
+        <TextView
+            android:id="@+id/tvMinTemp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:text="@{data.component1().component2().toString()}"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+
+            />
+
+        <TextView
+            android:id="@+id/tvMaxTemp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:text="@{data.component1().component1().toString()}"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvMinTemp"
+
+            />-->
+
+
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tvCity"
+                app:layout_constraintWidth_percent=".25"
+                android:layout_width="0dp"
+                app:layout_constraintWidth_default="percent"
+                android:layout_height="wrap_content"
+                android:text="@{data.component1().component3().toString()}"
+                android:textColor="@color/black"
+                android:gravity="center"
+                android:textSize="14sp"
+                android:padding="5dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+
+                />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tvhumidity"
+                app:layout_constraintWidth_percent=".25"
+                app:layout_constraintWidth_default="percent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:padding="5dp"
+                android:text="@{data.main.humidity.toString()}"
+                android:textColor="@color/black"
+                app:layout_constraintRight_toLeftOf="@id/tvMinTemp"
+                app:layout_constraintLeft_toRightOf="@id/tvCity"
+                app:layout_constraintTop_toTopOf="parent"
+                android:gravity="center"
+                />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tvMinTemp"
+                android:textSize="14sp"
+                android:padding="5dp"
+                app:layout_constraintWidth_percent=".25"
+                app:layout_constraintWidth_default="percent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@{data.main.tempMin.toString()}"
+                android:textColor="@color/black"
+                app:layout_constraintLeft_toRightOf="@id/tvhumidity"
+
+                app:layout_constraintTop_toTopOf="parent"
+                />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvMaxTemp"
+            android:textSize="14sp"
+            android:padding="5dp"
+            app:layout_constraintWidth_percent=".25"
+            app:layout_constraintWidth_default="percent"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@{data.main.tempMax.toString()}"
+            android:textColor="@color/black"
+            app:layout_constraintLeft_toRightOf="@id/tvMinTemp"
+
+            app:layout_constraintTop_toTopOf="parent"
+            />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</layout>
