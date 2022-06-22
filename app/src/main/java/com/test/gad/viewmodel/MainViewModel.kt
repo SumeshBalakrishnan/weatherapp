@@ -20,8 +20,8 @@ class MainViewModel @Inject constructor(
     private val _response: MutableLiveData<NetworkResult<WeatherResponse>> = MutableLiveData()
     val response: LiveData<NetworkResult<WeatherResponse>> = _response
 
-    fun fetchWeatherResponse() = viewModelScope.launch {
-        userListRepository.getWeatherResponse().collect {
+    fun fetchWeatherResponse(lat: String?, lng: String?) = viewModelScope.launch {
+        userListRepository.getWeatherResponse(lat, lng).collect {
             _response.value = it
         }
     }

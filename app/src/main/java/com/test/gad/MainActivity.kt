@@ -40,7 +40,7 @@ import com.test.gad.extenision.showToast
 import kotlin.math.ln
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity(), LocationListener {
+class MainActivity : AppCompatActivity() {
 
     private val viewModel: MainViewModel by viewModels()
     private lateinit var binding: ActivityMainBinding
@@ -53,8 +53,8 @@ class MainActivity : AppCompatActivity(), LocationListener {
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION)
 
-    private var lat: Double? = null
-    private var lng: Double? = null
+    private var lat: String? = null
+    private var lng: String? = null
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var locationRequest = LocationRequest.create()
@@ -173,19 +173,18 @@ class MainActivity : AppCompatActivity(), LocationListener {
     private fun locationCallback() {
         callback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
-                lat = locationResult.locations.get(0).latitude
-                lng = locationResult.locations.get(0).longitude
+                lat = locationResult.locations.get(0).latitude.toString()
+                lng = locationResult.locations.get(0).longitude.toString()
                 println("===latitude== : $lat")
                 println("===longitude== : $lng")
-                triggerAPI(lat, lng)
+                triggerAPI(lat.toString(), lng.toString())
             }
         }
     }
 
-    private fun triggerAPI(lat: Double?, lng: Double?) {
+    private fun triggerAPI(lat: String?, lng: String?) {
         if(Utils.hasInternetConnection(this)){
-            binding.pbDog.visibility = View.VISIBLE
-            viewModel.fetchWeatherResponse()
+            viewModel.fetchWeatherResponse(lat, lng)
         }else{
             Toast.makeText(
                 this,resources.getString(R.string.no_internet),
@@ -195,6 +194,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
     }
 
     private fun setObserver() {
+        binding.pbDog.visibility = View.VISIBLE
         viewModel.response.observe(this) { response ->
             when (response) {
                 is NetworkResult.Success -> {
@@ -227,15 +227,6 @@ class MainActivity : AppCompatActivity(), LocationListener {
     private fun initView() {
         binding.recyclerView.addItemDecoration(DividerItemDecoration(this, LinearLayoutManager.VERTICAL))
         binding.recyclerView.adapter = adapter
-    }
-
-    override fun onLocationChanged(location: Location) {
-        lng = location.longitude
-        lat = location.latitude
-        triggerAPI(lat, lng)
-
-        println("=Latitude ==: $lat")
-        println("=Longitude ==: $lng")
     }
 
 

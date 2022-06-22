@@ -16,9 +16,9 @@ class UserListRepository @Inject constructor(
     private val userListService: UserListService
 ) : BaseApiResponse() {
 
-    suspend fun getWeatherResponse(): Flow<NetworkResult<WeatherResponse>> {
+    suspend fun getWeatherResponse(lat: String?, lng: String?): Flow<NetworkResult<WeatherResponse>> {
         return flow<NetworkResult<WeatherResponse>> {
-            emit(safeApiCall { userListService.getWeatherList() })
+            emit(safeApiCall { userListService.getWeatherList(lat, lng) })
         }.flowOn(Dispatchers.IO)
     }
 }

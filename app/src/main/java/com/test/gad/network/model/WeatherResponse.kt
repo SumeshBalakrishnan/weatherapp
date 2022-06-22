@@ -43,7 +43,11 @@ data class Main(
 	val tempMin: Double? = null,
 
 	@field:SerializedName("temp_max")
-	val tempMax: Double? = null
+	val tempMax: Double? = null,
+
+	@field:SerializedName("humidity")
+	val humidity: Double? = null
+
 ) : Parcelable
 
 @Parcelize
