@@ -75,7 +75,7 @@
 
 
 
-            <androidx.appcompat.widget.AppCompatTextView
+            <!--<androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/tvCity"
                 app:layout_constraintWidth_percent=".25"
                 android:layout_width="0dp"
@@ -89,11 +89,11 @@
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
 
-                />
+                />-->
 
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/tvhumidity"
-                app:layout_constraintWidth_percent=".25"
+                app:layout_constraintWidth_percent=".33"
                 app:layout_constraintWidth_default="percent"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -102,7 +102,6 @@
                 android:text="@{data.main.humidity.toString()}"
                 android:textColor="@color/black"
                 app:layout_constraintRight_toLeftOf="@id/tvMinTemp"
-                app:layout_constraintLeft_toRightOf="@id/tvCity"
                 app:layout_constraintTop_toTopOf="parent"
                 android:gravity="center"
                 />
@@ -111,7 +110,7 @@
                 android:id="@+id/tvMinTemp"
                 android:textSize="14sp"
                 android:padding="5dp"
-                app:layout_constraintWidth_percent=".25"
+                app:layout_constraintWidth_percent=".33"
                 app:layout_constraintWidth_default="percent"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -127,7 +126,7 @@
             android:id="@+id/tvMaxTemp"
             android:textSize="14sp"
             android:padding="5dp"
-            app:layout_constraintWidth_percent=".25"
+            app:layout_constraintWidth_percent=".34"
             app:layout_constraintWidth_default="percent"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

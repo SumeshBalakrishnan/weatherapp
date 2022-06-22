@@ -29,7 +29,10 @@ data class City(
 	val name: String? = null,
 
 	@field:SerializedName("id")
-	val id: Int? = null
+	val id: Int? = null,
+
+	@field:SerializedName("country")
+	val country: String? = null,
 
 ) : Parcelable
 

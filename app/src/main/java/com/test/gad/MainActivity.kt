@@ -94,6 +94,7 @@ class MainActivity : AppCompatActivity() {
                 displayLocationSettingsRequest(this, true)
                 showToast("Gps is Offs")
             }else{
+                getLastKnownLocation()
                 displayLocationSettingsRequest(this, false)
             }
         }else{
@@ -182,6 +183,27 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    fun getLastKnownLocation() {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+        fusedLocationClient.lastLocation
+            .addOnSuccessListener { location->
+                if (location != null) {
+                   lat = location.latitude.toString()
+                    lng = location.longitude.toString()
+                    triggerAPI(lat, lng)
+                }
+            }
+    }
+
     private fun triggerAPI(lat: String?, lng: String?) {
         if(Utils.hasInternetConnection(this)){
             viewModel.fetchWeatherResponse(lat, lng)
@@ -198,11 +220,13 @@ class MainActivity : AppCompatActivity() {
         viewModel.response.observe(this) { response ->
             when (response) {
                 is NetworkResult.Success -> {
+                    val city = response.data?.city?.name +", "+ response.data?.city?.country
                     response.data?.let {
                         adapter.submitList(it.list)
                     }
                     println("==Success====")
                     binding.pbDog.visibility = View.GONE
+                    binding.tvCity.text = city
                 }
 
                 is NetworkResult.Error -> {
@@ -294,5 +318,16 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         binding.recyclerView.adapter = null
+    }
+
+    // Stop location updates
+    private fun stopLocationUpdates() {
+        fusedLocationClient.removeLocationUpdates(callback)
+    }
+
+    // Stop receiving location update when activity not visible/foreground
+    override fun onPause() {
+        super.onPause()
+        stopLocationUpdates()
     }
 }

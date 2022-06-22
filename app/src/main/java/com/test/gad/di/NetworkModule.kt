@@ -1,7 +1,8 @@
 package com.test.gad.di
 
-import com.test.gad.network.UserListService
+import com.test.gad.network.APIService
 import com.test.gad.BuildConfig
+import com.test.gad.utils.APIConstants.BASE_URL
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -34,13 +35,13 @@ object NetworkModule {
     @Provides
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
         .addConverterFactory(GsonConverterFactory.create())
-        .baseUrl("https://api.openweathermap.org/data/2.5/")
+        .baseUrl(BASE_URL)
         .client(okHttpClient)
         .build()
 
     @Provides
     @Singleton
-    fun provideApiService(retrofit: Retrofit): UserListService =
-        retrofit.create(UserListService::class.java)
+    fun provideApiService(retrofit: Retrofit): APIService =
+        retrofit.create(APIService::class.java)
 
 }

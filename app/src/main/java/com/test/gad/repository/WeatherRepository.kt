@@ -1,7 +1,7 @@
 package com.test.gad.repository
 
 import com.test.gad.utils.NetworkResult
-import com.test.gad.network.UserListService
+import com.test.gad.network.APIService
 import com.test.gad.network.model.BaseApiResponse
 import com.test.gad.network.model.WeatherResponse
 import dagger.hilt.android.scopes.ActivityRetainedScoped
@@ -12,13 +12,13 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 
 @ActivityRetainedScoped
-class UserListRepository @Inject constructor(
-    private val userListService: UserListService
+class WeatherRepository @Inject constructor(
+    private val apiService: APIService
 ) : BaseApiResponse() {
 
     suspend fun getWeatherResponse(lat: String?, lng: String?): Flow<NetworkResult<WeatherResponse>> {
         return flow<NetworkResult<WeatherResponse>> {
-            emit(safeApiCall { userListService.getWeatherList(lat, lng) })
+            emit(safeApiCall { apiService.getWeatherList(lat, lng) })
         }.flowOn(Dispatchers.IO)
     }
 }
