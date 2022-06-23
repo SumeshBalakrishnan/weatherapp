@@ -37,6 +37,7 @@ import com.test.gad.utils.NetworkResult
 import com.test.gad.utils.Utils
 import com.test.gad.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import java.lang.Exception
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -96,7 +97,7 @@ class MainActivity : AppCompatActivity() {
             //launchLogin()
             if (!isGpsEnable()) {
                 displayLocationSettingsRequest(this, true)
-                showToast("Gps is Offs")
+                showToast("GPS is Off")
                 binding.pbDog.visibility = View.GONE
                 getVisibility(false)
             } else {
@@ -280,8 +281,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         viewModel.test?.observe(this){
-            binding.tvCity.text = it.get(0).city
             if(it.isNotEmpty()){
+                binding.tvCity.text = it.get(0).city
                 adapter.submitList(it)
                 getVisibility(true)
                 adapter.notifyDataSetChanged()
@@ -335,7 +336,8 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             if (deniedCount == 0) {
-                triggerAPI(lat, lng)
+                //triggerAPI(lat, lng)
+                getFusedLocation()
             } else {
                 for ((permName, permResult) in permissionResult) {
                     if (ActivityCompat.shouldShowRequestPermissionRationale(this, permName)) {
@@ -376,7 +378,12 @@ class MainActivity : AppCompatActivity() {
 
     // Stop location updates
     private fun stopLocationUpdates() {
-        fusedLocationClient.removeLocationUpdates(callback)
+        try{
+            fusedLocationClient.removeLocationUpdates(callback)
+        }
+        catch (e : Exception){
+            e.localizedMessage
+        }
     }
 
     // Stop receiving location update when activity not visible/foreground
