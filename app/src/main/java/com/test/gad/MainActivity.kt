@@ -99,7 +99,7 @@ class MainActivity : AppCompatActivity() {
                 displayLocationSettingsRequest(this, true)
                 showToast("GPS is Off")
                 binding.pbDog.visibility = View.GONE
-                getVisibility(false)
+                viewModel.getDBdata()
             } else {
                 getLastKnownLocation()
                 displayLocationSettingsRequest(this, false)

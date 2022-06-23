@@ -31,10 +31,13 @@ class MainViewModel @Inject constructor(
 
 
     init {
+       getDBdata()
+    }
+
+    fun getDBdata() {
         viewModelScope.launch(Dispatchers.IO) {
-            var data  = weatherRepository.getAllWeather()
+            val data =  weatherRepository.getAllWeather()
             testMutable.postValue(data)
-            print(allEvents.toString())
         }
     }
 
