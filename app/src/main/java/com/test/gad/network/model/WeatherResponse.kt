@@ -9,9 +9,6 @@ import kotlinx.android.parcel.Parcelize
 @Parcelize
 data class WeatherResponse(
 
-	@PrimaryKey(autoGenerate = true)
-	val id: Long?=null,
-
 	@field:SerializedName("city")
 	val city: City? = null,
 
@@ -43,13 +40,13 @@ data class Main(
 	val temp: Double? = null,
 
 	@field:SerializedName("temp_min")
-	val tempMin: Double? = null,
+	var tempMin: Double? = null,
 
 	@field:SerializedName("temp_max")
-	val tempMax: Double? = null,
+	var tempMax: Double? = null,
 
 	@field:SerializedName("humidity")
-	val humidity: Double? = null
+	var humidity: Double? = null
 
 ) : Parcelable
 

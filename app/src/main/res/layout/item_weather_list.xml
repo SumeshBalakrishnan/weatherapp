@@ -6,7 +6,7 @@
 
         <variable
             name="data"
-            type="com.test.gad.network.model.WeatherListItem" />
+            type="com.test.gad.database.DatabaseUserListItem" />
 
         <variable
             name="clickListener"
@@ -99,7 +99,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="14sp"
                 android:padding="5dp"
-                android:text="@{data.main.humidity.toString()}"
+                android:text="@{data.humidity.toString()}"
                 android:textColor="@color/black"
                 app:layout_constraintRight_toLeftOf="@id/tvMinTemp"
                 app:layout_constraintTop_toTopOf="parent"
@@ -115,7 +115,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="@{data.main.tempMin.toString()}"
+                android:text="@{data.tempMin.toString()}"
                 android:textColor="@color/black"
                 app:layout_constraintLeft_toRightOf="@id/tvhumidity"
 
@@ -131,7 +131,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="@{data.main.tempMax.toString()}"
+            android:text="@{data.tempMax.toString()}"
             android:textColor="@color/black"
             app:layout_constraintLeft_toRightOf="@id/tvMinTemp"
 

@@ -27,9 +27,12 @@ import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.test.gad.adapter.UsersListAdapter
+import com.test.gad.database.DatabaseUserListItem
 import com.test.gad.databinding.ActivityMainBinding
 import com.test.gad.extenision.isGpsEnable
 import com.test.gad.extenision.showToast
+import com.test.gad.network.model.Main
+import com.test.gad.network.model.WeatherListItem
 import com.test.gad.utils.NetworkResult
 import com.test.gad.utils.Utils
 import com.test.gad.viewmodel.MainViewModel
@@ -57,6 +60,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var locationRequest = LocationRequest.create()
     private var callback: LocationCallback? = null
+
+    private var testlist : ArrayList<DatabaseUserListItem> = arrayListOf()
+
+    var databaseUserListItem: DatabaseUserListItem? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -179,7 +186,7 @@ class MainActivity : AppCompatActivity() {
                 lng = locationResult.locations.get(0).longitude.toString()
                 println("===latitude== : $lat")
                 println("===longitude== : $lng")
-                triggerAPI(lat.toString(), lng.toString())
+                //triggerAPI(lat.toString(), lng.toString())
             }
         }
     }
@@ -207,6 +214,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun triggerAPI(lat: String?, lng: String?) {
         if (Utils.hasInternetConnection(this)) {
+            binding.pbDog.visibility = View.VISIBLE
             getVisibility(true)
             viewModel.fetchWeatherResponse(lat, lng)
         } else {
@@ -217,9 +225,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun getVisibility(visible: Boolean) {
+    private fun getVisibility(visible: Boolean) {
         if (visible) {
-            binding.pbDog.visibility = View.VISIBLE
+            binding.pbDog.visibility = View.GONE
             binding.lytItemHead.visibility = View.VISIBLE
             binding.tvCity.visibility = View.VISIBLE
             binding.recyclerView.visibility = View.VISIBLE
@@ -240,7 +248,12 @@ class MainActivity : AppCompatActivity() {
                 is NetworkResult.Success -> {
                     val city = response.data?.city?.name + ", " + response.data?.city?.country
                     response.data?.let {
-                        adapter.submitList(it.list)
+                        for(item in response.data.list!!){
+                            databaseUserListItem = DatabaseUserListItem(city, item?.main!!.humidity,
+                                item?.main?.tempMax, item?.main?.tempMin)
+                            testlist.add(databaseUserListItem!!)
+                        }
+                        adapter.submitList(testlist)
                     }
                     println("==Success====")
                     binding.pbDog.visibility = View.GONE
@@ -264,6 +277,18 @@ class MainActivity : AppCompatActivity() {
                     binding.pbDog.visibility = View.VISIBLE
                 }
             }
+        }
+
+        viewModel.test?.observe(this){
+            binding.tvCity.text = it.get(0).city
+            if(it.isNotEmpty()){
+                adapter.submitList(it)
+                getVisibility(true)
+                adapter.notifyDataSetChanged()
+            }else{
+                getVisibility(false)
+            }
+
         }
     }
 
